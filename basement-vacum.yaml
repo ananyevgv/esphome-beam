@@ -1,0 +1,141 @@
+######################################
+##           ESP32-C3               ##
+##  |21|       |#|      | 0|        ##
+##  |20|       |#|      | 1|        ##
+##  |10|       |#|      | 2|        ##
+##  | 9|       |#|      | 3|        ##
+##  | 8|       |#|      | 4|        ##
+##  | 7|       |#|      |3v|        ##
+##  | 6|       |#|      |GN|        ##
+##  | 5|       |#|      |5V|        ## 
+######################################
+
+######################################
+##          PIC16F690               ##
+##  | 1| 5V    |#|      |20| GND    ##
+##  | 2|       |#|      |19|        ##
+##  | 3|       |#|      |18|        ##
+##  | 4|       |#|      |17| zero   ##
+##  | 5| gate  |#|      |16| J3     ##
+##  | 6| buton |#|      |15| LED    ##
+##  | 7| start |#|      |14|        ##
+##  | 8|       |#|      |13|        ## 
+##  | 9|       |#|      |12|        ##
+##  |10|       |#|      |11|        ## 
+######################################
+
+########  P1 ######## 
+#  |1| VCC     
+#  |2| ADC?  j3 коммаппаратор
+#  |3| zero  
+#  |4| gate pin 
+#  |5| GND    
+
+########  P2 ######## 
+#  |1| TQ     
+#  |2| TQ
+
+substitutions:
+  name: basement-vacum
+  device_description: "BEAM SC 355 vacuum cleaner"
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+#-------------------------------------------
+# PACKAGES
+#-------------------------------------------
+packages:
+  wifi: !include packages/wifi.yaml
+  device_base: !include packages/device_base.yaml
+  web: !include included/web.yaml
+  time: !include included/time.yaml
+
+
+external_components:
+  - source: github://pr#7072
+    components: [ac_dimmer]
+    refresh: 1h
+
+#-------------------------------------------
+# OUTPUT
+#-------------------------------------------      
+output:
+  - platform: ac_dimmer
+    gate_pin: 0
+    id: dimmer
+    zero_cross_pin:
+      number: 1
+      mode:
+        input: true
+      inverted: yes
+    min_power: 30%
+    init_with_half_cycle: true
+
+#-------------------------------------------
+# LIGHT
+#-------------------------------------------
+light:
+  - platform: monochromatic
+    output: dimmer
+    name: "vacuum cleaner"
+    id: vacuum_cleaner
+    restore_mode: ALWAYS_OFF
+    icon: mdi:vacuum-outline
+    default_transition_length: 2s
+
+#-------------------------------------------
+# STATUS LED
+#-------------------------------------------
+status_led:
+  pin: 6
+
+#-------------------------------------------
+# BINARY SENSOR
+#-------------------------------------------
+binary_sensor:
+  - platform: gpio
+    pin: 2
+    name: "vacum on"
+    device_class: power
+    on_press: 
+       - light.toggle: vacuum_cleaner
+
+  - platform: gpio
+    pin: 3
+    name: "vacum start"
+    device_class: window
+    on_press: 
+      - light.turn_on: vacuum_cleaner
+    on_release:
+      - light.turn_off: vacuum_cleaner
+
+  - platform: analog_threshold
+    name: "Vacuum overload"
+    sensor_id: vacuum_current
+    device_class: problem
+    threshold: 16
+    on_press: 
+      - light.turn_off: vacuum_cleaner
+
+  - platform: gpio
+    pin: 4
+    name: "overload"
+    device_class: problem
+    on_press: 
+       - light.toggle: vacuum_cleaner
+#-------------------------------------------
+# SENSOR
+#-------------------------------------------
+sensor:
+  - platform: ct_clamp
+    sensor: adc_sensor
+    name: "Vacuum current"
+    update_interval: 60s
+    id: vacuum_current
+
+  - platform: adc
+    pin: 5
+    id: adc_sensor
