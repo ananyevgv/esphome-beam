@@ -1,4 +1,4 @@
-# esphome-beam BEAM vacuum cleaner
+# esphome BEAM vacuum cleaner
 
 Бета версия (не протестирована на пылесосе) для контроля мощности необходим делитель напряжения (3.3кОм 1.7кОм)
 
