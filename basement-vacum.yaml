@@ -129,7 +129,7 @@ binary_sensor:
     name: "overload"
     device_class: problem
     on_press: 
-       - light.toggle: vacuum_cleaner
+       - light.turn_off: vacuum_cleaner
 #-------------------------------------------
 # SENSOR
 #-------------------------------------------
