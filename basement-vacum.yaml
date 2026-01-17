@@ -1,13 +1,13 @@
 ######################################
 ##           ESP32-C3               ##
-##  |21|       |#|      | 0|        ##
-##  |20|       |#|      | 1|        ##
-##  |10|       |#|      | 2|        ##
-##  | 9|       |#|      | 3|        ##
-##  | 8|       |#|      | 4|        ##
+##  |21|       |#|      | 0| gate   ##
+##  |20|       |#|      | 1|zero    ##
+##  |10|       |#|      | 2| buton  ##
+##  | 9|       |#|      | 3| start  ##
+##  | 8|       |#|      | 4| over   ##
 ##  | 7|       |#|      |3v|        ##
-##  | 6|       |#|      |GN|        ##
-##  | 5|       |#|      |5V|        ## 
+##  | 6| led   |#|      |GN|        ##
+##  | 5| adc   |#|      |5V|        ## 
 ######################################
 
 ######################################
@@ -97,14 +97,18 @@ status_led:
 #-------------------------------------------
 binary_sensor:
   - platform: gpio
-    pin: 2
+    pin: 
+      number: 2
+      inverted: yes
     name: "vacum on"
     device_class: power
     on_press: 
        - light.toggle: vacuum_cleaner
 
   - platform: gpio
-    pin: 3
+    pin: 
+      number: 3
+      inverted: yes
     name: "vacum start"
     device_class: window
     on_press: 
