@@ -52,13 +52,7 @@ packages:
   device_base: !include packages/device_base.yaml
   web: !include included/web.yaml
   time: !include included/time.yaml
-
-
-external_components:
-  - source: github://pr#7072
-    components: [ac_dimmer]
-    refresh: 1h
-
+  
 #-------------------------------------------
 # OUTPUT
 #-------------------------------------------      
@@ -71,7 +65,9 @@ output:
       mode:
         input: true
       inverted: yes
-    min_power: 30%
+    method: leading_pulse               # Для симистора BTA16
+    min_power: 0.15                     # 15% — минимальный стартовый уровень
+    max_power: 0.95                     # 95% — щадящий режим для двигателя
     init_with_half_cycle: true
 
 #-------------------------------------------
@@ -84,14 +80,28 @@ light:
     id: vacuum_cleaner
     restore_mode: ALWAYS_OFF
     icon: mdi:vacuum-outline
-    default_transition_length: 2s
+    gamma_correct: 0                    # Отключаем гамму (важно для двигателя)
+    default_transition_length: 0s       # Без плавных переходов от HA
 
 #-------------------------------------------
 # STATUS LED
 #-------------------------------------------
 status_led:
   pin: 6
-
+  
+script:
+  - id: motor_soft_start
+    mode: single
+    then:
+      # Шаг 1: Устанавливаем минимальную мощность
+      - light.turn_on:
+          id: vacuum_cleaner
+          brightness: 0.15
+      # Шаг 2: Плавно наращиваем до максимума за 2 секунды
+      - light.turn_on:
+          id: vacuum_cleaner
+          brightness: 1.0
+          transition_length: 2s  
 #-------------------------------------------
 # BINARY SENSOR
 #-------------------------------------------
@@ -103,7 +113,15 @@ binary_sensor:
     name: "vacum on"
     device_class: power
     on_press: 
-       - light.toggle: vacuum_cleaner
+      if:
+        condition:
+          # Same syntax for is_off
+          light.is_on: vacuum_cleaner
+        then: 
+          - light.turn_off: vacuum_cleaner
+        else: 
+          - script.execute: motor_soft_start
+   #    - light.toggle: vacuum_cleaner
 
   - platform: gpio
     pin: 
@@ -112,7 +130,8 @@ binary_sensor:
     name: "vacum start"
     device_class: window
     on_press: 
-      - light.turn_on: vacuum_cleaner
+      - script.execute: motor_soft_start
+    #  - light.turn_on: vacuum_cleaner
     on_release:
       - light.turn_off: vacuum_cleaner
 
