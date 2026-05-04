@@ -44,6 +44,10 @@ esp32:
   framework:
     type: esp-idf
 
+external_components:
+  - source: github://InspectorTrinket/advanced_ac_dimmer
+    components: [advanced_ac_dimmer] 
+    
 #-------------------------------------------
 # PACKAGES
 #-------------------------------------------
@@ -57,19 +61,22 @@ packages:
 # OUTPUT
 #-------------------------------------------      
 output:
-  - platform: ac_dimmer
+  - platform: advanced_ac_dimmer
     gate_pin: 0
     id: dimmer
     zero_cross_pin:
       number: 1
       mode:
         input: true
-      inverted: yes
+        pullup: false
+      inverted: false
     method: leading_pulse               # Для симистора BTA16
     min_power: 0.15                     # 15% — минимальный стартовый уровень
     max_power: 0.95                     # 95% — щадящий режим для двигателя
-    init_with_half_cycle: true
-
+    zc_method: pulse
+    init_with_n_half_cycles: 12 
+    rms_correction: false 
+    
 #-------------------------------------------
 # LIGHT
 #-------------------------------------------
