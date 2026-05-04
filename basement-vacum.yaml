@@ -89,7 +89,8 @@ light:
     icon: mdi:vacuum-outline
     gamma_correct: 0                    # Отключаем гамму (важно для двигателя)
     default_transition_length: 0s       # Без плавных переходов от HA
-
+    on_turn_on:                         
+      - script.execute: motor_soft_start
 #-------------------------------------------
 # STATUS LED
 #-------------------------------------------
