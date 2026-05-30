@@ -4,10 +4,10 @@
 ##  |20|       |#|      | 1| zero   ##
 ##  |10|       |#|      | 2| buton  ##
 ##  | 9|       |#|      | 3| start  ##
-##  | 8|       |#|      | 4| over   ##
+##  | 8|       |#|      | 4| adc    ##
 ##  | 7|       |#|      |3v|        ##
 ##  | 6| led   |#|      |GN|        ##
-##  | 5| adc!!!|#|      |5V|        ## 
+##  | 5| over  |#|      |5V|        ## 
 ######################################
 
 ######################################
@@ -179,8 +179,15 @@ sensor:
     sensor: adc_sensor
     name: "Vacuum current"
     id: vacuum_current
-
+    update_interval: 1s 
+    filters:
+      - calibrate_linear:
+          - 1.07 -> 0
+          - 0.1333 -> 4.0
+          
   - platform: adc
     pin: 4
     id: adc_sensor
     attenuation: auto
+    name: adc current
+    update_interval: 1s 
