@@ -1,13 +1,13 @@
 ######################################
 ##           ESP32-C3               ##
 ##  |21|       |#|      | 0| gate   ##
-##  |20|       |#|      | 1|zero    ##
+##  |20|       |#|      | 1| zero   ##
 ##  |10|       |#|      | 2| buton  ##
 ##  | 9|       |#|      | 3| start  ##
 ##  | 8|       |#|      | 4| over   ##
 ##  | 7|       |#|      |3v|        ##
 ##  | 6| led   |#|      |GN|        ##
-##  | 5| adc   |#|      |5V|        ## 
+##  | 5| adc!!!|#|      |5V|        ## 
 ######################################
 
 ######################################
@@ -73,7 +73,7 @@ output:
         pullup: false
       inverted: false
     method: leading_pulse               # Для симистора BTA16
-    min_power: 0.20                    # 15% — минимальный стартовый уровень
+    min_power: 0.15                    # 15% — минимальный стартовый уровень
     max_power: 0.95                     # 95% — щадящий режим для двигателя
     zc_method: pulse
     init_with_n_half_cycles: 12 
@@ -108,7 +108,7 @@ script:
       - delay: 0.2s
       - while:
           condition:
-            lambda: return id(vacuum_cleaner)->current_values.get_brightness() < 0.95f;
+            lambda: return id(vacuum_cleaner)->current_values.get_brightness() < 1.0f;
           then:
             - light.dim_relative:
                 id: vacuum_cleaner
@@ -149,7 +149,7 @@ binary_sensor:
 
   - platform: gpio
     pin: 
-      number: 4
+      number: 5
       inverted: yes
     name: "overload"
     device_class: problem
@@ -181,6 +181,6 @@ sensor:
     id: vacuum_current
 
   - platform: adc
-    pin: 5
+    pin: 4
     id: adc_sensor
     attenuation: auto
