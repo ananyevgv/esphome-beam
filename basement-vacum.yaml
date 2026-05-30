@@ -38,12 +38,14 @@
 substitutions:
   name: basement-vacum
   device_description: "BEAM SC 355 vacuum cleaner"
-
+  room: Подвал
 esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
-
+    
+logger:
+  
 external_components:
   - source: github://InspectorTrinket/advanced_ac_dimmer
     components: [advanced_ac_dimmer] 
@@ -71,11 +73,11 @@ output:
         pullup: false
       inverted: false
     method: leading_pulse               # Для симистора BTA16
-    min_power: 0.15                     # 15% — минимальный стартовый уровень
+    min_power: 0.20                    # 15% — минимальный стартовый уровень
     max_power: 0.95                     # 95% — щадящий режим для двигателя
     zc_method: pulse
     init_with_n_half_cycles: 12 
-    rms_correction: false 
+    
     
 #-------------------------------------------
 # LIGHT
@@ -89,8 +91,7 @@ light:
     icon: mdi:vacuum-outline
     gamma_correct: 0                    # Отключаем гамму (важно для двигателя)
     default_transition_length: 0s       # Без плавных переходов от HA
-    on_turn_on:                         
-      - script.execute: motor_soft_start
+
 #-------------------------------------------
 # STATUS LED
 #-------------------------------------------
@@ -101,15 +102,19 @@ script:
   - id: motor_soft_start
     mode: single
     then:
-      # Шаг 1: Устанавливаем минимальную мощность
       - light.turn_on:
           id: vacuum_cleaner
-          brightness: 0.15
-      # Шаг 2: Плавно наращиваем до максимума за 2 секунды
-      - light.turn_on:
-          id: vacuum_cleaner
-          brightness: 1.0
-          transition_length: 2s  
+          brightness: 0.10
+      - delay: 0.2s
+      - while:
+          condition:
+            lambda: return id(vacuum_cleaner)->current_values.get_brightness() < 0.95f;
+          then:
+            - light.dim_relative:
+                id: vacuum_cleaner
+                relative_brightness: 1
+            - delay: 0.05s
+
 #-------------------------------------------
 # BINARY SENSOR
 #-------------------------------------------
@@ -121,15 +126,7 @@ binary_sensor:
     name: "vacum on"
     device_class: power
     on_press: 
-      if:
-        condition:
-          # Same syntax for is_off
-          light.is_on: vacuum_cleaner
-        then: 
-          - light.turn_off: vacuum_cleaner
-        else: 
-          - script.execute: motor_soft_start
-   #    - light.toggle: vacuum_cleaner
+      - light.toggle: vacuum_cleaner
 
   - platform: gpio
     pin: 
@@ -138,8 +135,7 @@ binary_sensor:
     name: "vacum start"
     device_class: window
     on_press: 
-      - script.execute: motor_soft_start
-    #  - light.turn_on: vacuum_cleaner
+      - light.turn_on: vacuum_cleaner
     on_release:
       - light.turn_off: vacuum_cleaner
 
@@ -152,11 +148,29 @@ binary_sensor:
       - light.turn_off: vacuum_cleaner
 
   - platform: gpio
-    pin: 4
+    pin: 
+      number: 4
+      inverted: yes
     name: "overload"
     device_class: problem
     on_press: 
        - light.turn_off: vacuum_cleaner
+
+#-------------------------------------------
+# Button
+#-------------------------------------------
+button:
+  - platform: template
+    name: "vacuum on"
+    on_press:
+      then:
+        - script.execute: motor_soft_start  
+  - platform: template
+    name: "vacuum off"
+    on_press:
+      then:
+        - light.turn_off: vacuum_cleaner
+
 #-------------------------------------------
 # SENSOR
 #-------------------------------------------
@@ -164,9 +178,9 @@ sensor:
   - platform: ct_clamp
     sensor: adc_sensor
     name: "Vacuum current"
-    update_interval: 60s
     id: vacuum_current
 
   - platform: adc
     pin: 5
     id: adc_sensor
+    attenuation: auto
