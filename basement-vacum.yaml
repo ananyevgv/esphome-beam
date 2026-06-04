@@ -39,11 +39,14 @@ substitutions:
   name: basement-vacum
   device_description: "BEAM SC 355 vacuum cleaner"
   room: Подвал
+
 esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
-    
+    sdkconfig_options:
+      CONFIG_ESP_TIMER_SUPPORTS_ISR_DISPATCH_METHOD: "y"  # callbacks immune to task preemption
+
 logger:
   
 external_components:
@@ -58,7 +61,9 @@ packages:
   device_base: !include packages/device_base.yaml
   web: !include included/web.yaml
   time: !include included/time.yaml
-  
+
+wifi:
+  power_save_mode: none   # eliminates bursty WiFi wakeup events
 #-------------------------------------------
 # OUTPUT
 #-------------------------------------------      
@@ -73,10 +78,10 @@ output:
         pullup: false
       inverted: false
     method: leading_pulse               # Для симистора BTA16
-    min_power: 0.15                    # 15% — минимальный стартовый уровень
-    max_power: 0.95                     # 95% — щадящий режим для двигателя
+    min_power: 0.15                     # 15% — минимальный стартовый уровень
+    max_power: 1 #0.95                  # 95% — щадящий режим для двигателя
     zc_method: pulse
-    init_with_n_half_cycles: 12 
+   # init_with_n_half_cycles: 12 
     
     
 #-------------------------------------------
@@ -91,7 +96,20 @@ light:
     icon: mdi:vacuum-outline
     gamma_correct: 0                    # Отключаем гамму (важно для двигателя)
     default_transition_length: 0s       # Без плавных переходов от HA
-
+    on_turn_on: 
+      then:
+        - light.turn_on:
+            id: vacuum_cleaner
+            brightness: 0.10
+        - delay: 0.2s
+        - while:
+            condition:
+              lambda: return id(vacuum_cleaner)->current_values.get_brightness() < 1.0f;
+            then:
+              - light.dim_relative:
+                  id: vacuum_cleaner
+                  relative_brightness: 5%
+              - delay: 0.1s
 #-------------------------------------------
 # STATUS LED
 #-------------------------------------------
@@ -112,8 +130,8 @@ script:
           then:
             - light.dim_relative:
                 id: vacuum_cleaner
-                relative_brightness: 1
-            - delay: 0.05s
+                relative_brightness: 5%
+            - delay: 0.1s
 
 #-------------------------------------------
 # BINARY SENSOR
@@ -139,55 +157,27 @@ binary_sensor:
     on_release:
       - light.turn_off: vacuum_cleaner
 
-  - platform: analog_threshold
-    name: "Vacuum overload"
-    sensor_id: vacuum_current
-    device_class: problem
-    threshold: 16
-    on_press: 
-      - light.turn_off: vacuum_cleaner
-
   - platform: gpio
     pin: 
       number: 5
       inverted: yes
     name: "overload"
     device_class: problem
+    filters:
+      - delayed_on: 500ms
     on_press: 
        - light.turn_off: vacuum_cleaner
-
-#-------------------------------------------
-# Button
-#-------------------------------------------
-button:
-  - platform: template
-    name: "vacuum on"
-    on_press:
-      then:
-        - script.execute: motor_soft_start  
-  - platform: template
-    name: "vacuum off"
-    on_press:
-      then:
-        - light.turn_off: vacuum_cleaner
 
 #-------------------------------------------
 # SENSOR
 #-------------------------------------------
 sensor:
-  - platform: ct_clamp
-    sensor: adc_sensor
-    name: "Vacuum current"
-    id: vacuum_current
-    update_interval: 1s 
-    filters:
-      - calibrate_linear:
-          - 1.07 -> 0
-          - 0.1333 -> 4.0
-          
-  - platform: adc
-    pin: 4
-    id: adc_sensor
-    attenuation: auto
-    name: adc current
-    update_interval: 1s 
+  - platform: template
+    name: "Mains Frequency"
+    device_class: frequency
+    state_class: measurement
+    unit_of_measurement: Hz
+    accuracy_decimals: 2
+    entity_category: diagnostic
+    update_interval: 10s
+    lambda: return id(dimmer).get_frequency_hz();
