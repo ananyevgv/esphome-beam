@@ -100,7 +100,7 @@ light:
       then:
         - light.turn_on:
             id: vacuum_cleaner
-            brightness: 0.10
+            brightness: 0.15
         - delay: 0.2s
         - while:
             condition:
@@ -116,23 +116,6 @@ light:
 status_led:
   pin: 6
   
-script:
-  - id: motor_soft_start
-    mode: single
-    then:
-      - light.turn_on:
-          id: vacuum_cleaner
-          brightness: 0.10
-      - delay: 0.2s
-      - while:
-          condition:
-            lambda: return id(vacuum_cleaner)->current_values.get_brightness() < 1.0f;
-          then:
-            - light.dim_relative:
-                id: vacuum_cleaner
-                relative_brightness: 5%
-            - delay: 0.1s
-
 #-------------------------------------------
 # BINARY SENSOR
 #-------------------------------------------
