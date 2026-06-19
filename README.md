@@ -5,9 +5,8 @@
 ![GitHub release](https://img.shields.io/github/v/release/ananyevgv/esphome-beam)
 ![Status](https://img.shields.io/badge/status-completed-brightgreen)
 
-**Полноценная замена оригинальной платы управления центрального пылесоса BEAM на базе ESPHome.**  
-
 <p align="center">
+  <b style="font-size: 25px;">Полноценная замена оригинальной платы управления центрального пылесоса BEAM на базе ESPHome.</b><br>
   <b style="font-size: 25px;">Проект родился из-за выхода из строя PIC контроллера на оригинальной плате.</b><br>
   <b style="font-size: 50px;">😠 Стоимость платы превысила все ожидания 😠</b>
 </p>
