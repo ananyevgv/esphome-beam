@@ -1,5 +1,5 @@
 
-# 🧹 ESPHome BEAM vacuum cleaner — полная замена штатного контроллера
+# 🧹 ESPHome BEAM vacuum cleaner — замена штатного контроллера
 
 ![ESPHome Ready](https://img.shields.io/badge/ESPHome-Ready-000000?logo=esphome)
 ![GitHub release](https://img.shields.io/github/v/release/ananyevgv/esphome-beam)
