@@ -47,6 +47,6 @@
 ![vacuum](/images/beam.jpg)
 ![board](/images/beam-board.jpg)
 
-⭐ Поддержать проект
+## ⭐ Поддержать проект
 
 Если проект оказался полезным — поставьте ⭐ на GitHub!
