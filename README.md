@@ -1,9 +1,13 @@
 
 # 🧹 ESPHome BEAM vacuum cleaner — замена штатного контроллера
+[![License][license-shield]][license]
+[![ESPHome release][esphome-release-shield]][esphome-release]
 
-![ESPHome Ready](https://img.shields.io/badge/ESPHome-Ready-000000?logo=esphome)
-![GitHub release](https://img.shields.io/github/v/release/ananyevgv/esphome-beam)
-![Status](https://img.shields.io/badge/status-completed-brightgreen)
+[license-shield]: https://img.shields.io/static/v1?label=License&message=MIT&color=orange&logo=license
+[license]: https://opensource.org/licenses/MIT
+[esphome-release-shield]: https://img.shields.io/github/v/release/esphome/esphome?label=ESPHome&color=green&logo=esphome
+[esphome-release]: https://esphome.io/
+
 
 <p align="center">
   <b style="font-size: 25px;">Полноценная замена оригинальной платы управления центрального пылесоса BEAM на базе ESPHome.</b><br>
@@ -42,3 +46,7 @@
 
 ![vacuum](/images/beam.jpg)
 ![board](/images/beam-board.jpg)
+
+⭐ Поддержать проект
+
+Если проект оказался полезным — поставьте ⭐ на GitHub!
